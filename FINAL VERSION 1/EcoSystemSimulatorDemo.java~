@@ -1,0 +1,78 @@
+/**
+ * EcosystemSimulatorDemo.java
+ * Author: Theo Liu
+ * 11/28/2018
+ * demos the ecosystem simulator
+ */
+
+import java.util.Scanner;
+
+class EcoSystemSimulatorDemo {
+  public static void main(String[] args){
+    Scanner input = new Scanner(System.in);
+    int total;
+   
+    int side = 0;
+   int wolvesNum = 0;
+    int sheepNum = 0;
+    int plantNum = 0;
+    int wolvesHealth = 0;
+    int sheepHealth = 0;
+    int plantHealth = 0;
+    double plantGrowth = 0;
+
+   
+     do {
+      System.out.println("What do you want the square side length to be:");
+      side = input.nextInt();
+    } while(side <= 1);
+    input.nextLine();
+    do{
+      wolvesNum = 0;
+    sheepNum = 0;
+    plantNum = 0;
+    
+     wolvesHealth = 0;
+     sheepHealth = 0;
+     plantHealth = 0;
+     plantGrowth = 0;
+     
+      System.out.println("Input the number of wovles you want");
+      wolvesNum = input.nextInt();
+      System.out.println("Input the health of wolves you want");
+      wolvesHealth = input.nextInt();
+      input.nextLine();
+    
+    
+      System.out.println("Input the number of sheep you want");
+      sheepNum = input.nextInt();
+      System.out.println("Input the health of sheep you want");
+      sheepHealth = input.nextInt();
+      input.nextLine();
+    
+    
+      System.out.println("Input the number of plant you want");
+      plantNum = input.nextInt();
+    
+      System.out.println("Input the health of plants you want");
+      plantHealth = input.nextInt();
+   
+      System.out.println("What do you want the plant growing rate to be? (input # grown / day)");
+      plantGrowth = input.nextDouble();
+   
+    total = plantNum + sheepNum + wolvesNum;
+    } while (total > side*side);
+    
+    EcoSystemSimulatorOriginal2 world = new EcoSystemSimulatorOriginal2(wolvesNum,wolvesHealth, sheepNum,sheepHealth,plantHealth,plantNum, plantGrowth,side);
+    
+    world.simulate();
+    
+    System.out.println("Enter to exit");
+    input.nextLine();
+    input.nextLine();
+    input.close();
+    System.exit(0);
+
+
+  }
+}

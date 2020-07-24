@@ -1,0 +1,457 @@
+
+
+
+class EcoSystemSimulatorOriginal2 {
+  
+  private int wolvesNum = 0;
+  private int wolvesHealth = 0;
+  private int sheepNum = 0;
+  private int sheepHealth = 0;
+  private int plantHealth = 0;
+  private int plantNum = 0;
+  private double plantGrowth = 0;
+  private int side;
+  private Organism[][] map;
+  private Organism[] store;
+  
+  EcoSystemSimulatorOriginal2(int wolvesNum, int wolvesHealth, int sheepNum,
+                              int sheepHealth, int plantHealth, int plantNum, double plantGrowth, int side){
+    this.wolvesNum = wolvesNum;
+    this.wolvesHealth = wolvesHealth;
+    this.sheepNum = sheepNum;
+    this.sheepHealth = sheepHealth;
+    this.plantHealth = plantHealth;
+    this.plantNum = plantNum;
+    this.plantGrowth = plantGrowth;
+    this.side = side;
+  }
+  
+  public void simulate(){
+    
+
+    // build a two D grid map to display ecosystem
+    map = new Organism[side][side];
+    // build a one D array to hold Organism objects
+    store = new Organism[side*side];
+    
+    int x, y,counter = 0;
+
+    // put sheeps on grid
+    for(int i = 0; i < sheepNum; i++){
+      do {
+        x = (int)( Math.random() * side);
+        y = (int)( Math.random() * side);
+      } while (map[x][y] != null);
+      Sheep objSheep = new Sheep(sheepHealth,x,y);
+      store[counter++] = objSheep;
+      objSheep.setAge(20);
+      map[x][y] = objSheep;
+    }
+    
+    // put wolves on grid
+    for (int i = 0; i < wolvesNum; i++){
+      do {
+        x = (int)( Math.random() * side);
+        y = (int)( Math.random() * side);
+      } while (map[x][y] != null);
+      
+      // draw image wolf on current cell
+      Wolf objWolf = new Wolf(wolvesHealth,x,y);
+      store[counter++] = objWolf;
+      objWolf.setAge(20);
+      map[x][y] = objWolf;
+    }
+    
+    // put plants on grid
+    for(int i = 0; i < plantNum; i++){
+      do {
+        y = (int)( Math.random() * side);
+        x = (int)( Math.random() * side);
+      } while (map[x][y] != null);
+      
+      Plant objPlant = new Plant(plantHealth,x,y);
+      store[counter++] = objPlant;
+      
+      map[x][y] = objPlant;
+
+    }
+    
+    DisplayGrid grid = new DisplayGrid(map);
+    grid.refresh();
+    
+    try{ Thread.sleep(800); }catch(Exception e) {};
+ 
+    int numRun = 1; // count turns of habitation 
+    System.out.println("Day: " + (numRun++) );
+      System.out.println("Number of Plants: "+ plantNum);
+      System.out.println("Number of Sheep: "+ sheepNum);
+      System.out.println("Number of Wolves: "+ wolvesNum);
+      System.out.println();
+    
+    do {
+      
+      // store object's old location
+      for(int i = 0; i < counter; i++){
+        if (store[i] != null){
+             Organism object = store[i];
+             object.setX(object.getCol());
+             object.setY(object.getRow());
+        }
+      }
+      
+      // Get new location for every animals
+      for(int i = 0; i < counter; i++){
+        if (store[i] != null){
+          // skip plant
+          if(!store[i].getType().equals("P")){
+             Organism objAnimal = store[i];
+            ((Animal)objAnimal).move(side,map);
+          }
+        }
+      }
+
+      // make sure each location has less than two object(s)
+      boolean multiple = false;
+      do {
+      multiple = false;
+      int[][] checkMultiple = new int[side][side];
+      for (int i = 0; i < side; i++){
+        for (int j = 0; j < side; j++){
+          checkMultiple[i][j] = 0;
+        }
+      }
+      for (int i = 0; i < counter; i++){
+        checkMultiple[store[i].getRow()][store[i].getCol()]++;
+      }
+      for (int i = 0; i < side; i++){
+        for (int j = 0; j < side; j++){
+          if (checkMultiple[i][j] > 2){
+            multiple = true;
+              for (int l = 0; l < counter; l++){               
+                if (store[l].getRow() == i && store[l].getCol() == j){
+                  store[l].setCol(store[l].getX());
+                  store[l].setRow(store[l].getY());
+                  checkMultiple[i][j]--;
+                }
+              } 
+          }else{multiple = false;}
+        }
+      }
+      } while (multiple == true);
+      
+      // variables to store new Organism when created.
+      Organism[] newOrg = new Organism[side*side];
+      int newCount = 0;
+      
+      // check each organism's location to action
+      for(int i = 0; i < counter; i++){
+        
+        if(store[i] != null){
+            
+          Organism objOrg = store[i];
+          int currentY = objOrg.getRow();
+          int currentX = objOrg.getCol();
+        
+          for( int j = i + 1; j < counter; j++) {
+            if(store[j] != null){
+            
+            Organism objOrgNext = store[j];
+            int nextY = objOrgNext.getRow();
+            int nextX = objOrgNext.getCol();
+            
+          if( currentY == nextY && currentX == nextX ){
+            
+            String ctype = objOrg.getType(); // current organism
+            String ntype = objOrgNext.getType(); // next organism
+            
+            // a wolf stomps and kills a plant
+            if (ctype.equals("W") && ntype.equals("P")){
+              plantNum--;
+              store[j] = null; // remove the plant from store
+              
+            // a sheep moves onto a plant
+            } else if (ctype.equals("S") && ntype.equals("P")){
+              // sheep eat plant and get plant's health number
+              objOrg.setNumHealth(objOrg.getNumHealth() + objOrgNext.getNumHealth());
+              plantNum--;
+              store[j] = null; // remove the plant from store
+              objOrg.setLastEaten();
+              
+            // two same type animals meet
+            } else if (ctype.equals(ntype) && !ctype.equals("P")){
+              // two animals with different gender meet
+              if(ctype.equals(ntype) && ((Animal)objOrg).getGender() != ((Animal)objOrgNext).getGender()){
+                // new baby happen if old and strong enough
+                if(((Animal)objOrg).checkAge() && ((Animal)objOrgNext).checkAge() &&
+                   objOrg.getNumHealth() > 20 && objOrgNext.getNumHealth() > 20 && ((Animal)objOrg).checkPregnancy() && ((Animal)objOrgNext).checkPregnancy()
+                  && objOrg.checkEaten() && objOrgNext.checkEaten()){
+                  
+                  // parents stay where they are before.
+                  objOrg.setCol(objOrg.getX());
+                  objOrg.setRow(objOrg.getY());
+                  objOrgNext.setCol(objOrgNext.getX());
+                  objOrgNext.setRow(objOrgNext.getY());
+                  
+                  boolean check = false;
+                  int checkingX = 0, checkingY = 0;
+                  // look around neighbour to get nearby empty space to put new baby
+                  for (int l = currentY - 1; l < currentY + 2; l++){
+                    for (int h = currentX -1; h < currentX + 2; h++){
+                      if (h > 0 && h < side && l > 0 && l < side && map[l][h] == null){
+                          check = true;
+                          checkingX = h;
+                          checkingY = l;
+                      }
+                    }
+                  }
+                  if (check == true){
+//                    int nearX, nearY;
+//                    do {
+//                      nearX = (int)(Math.random()*3);
+//                      nearY = (int)(Math.random()*3);
+//                      if ((int)(Math.random()*2) == 1){
+//                        nearX = -1*nearX;
+//                      } else {
+//                        nearX = nearX;
+//                      }
+//                      if ((int)(Math.random()*2) == 1){
+//                        nearY = -1*nearY;
+//                      } else {
+//                        nearY = nearY;
+//                      }
+//                    } while (map[nearX][nearY] != null);
+                    
+                    if(ctype.equals("S")){
+                      sheepNum++;
+                      Sheep objSheep = new Sheep(sheepHealth,checkingX,checkingY);
+                      newOrg[newCount++] = (Organism)objSheep; //add to newOrg
+                    }else if(ctype.equals("W")){
+                      wolvesNum++;
+                      Wolf objWolf = new Wolf(wolvesHealth,checkingX,checkingY);
+                      newOrg[newCount++] = (Organism)objWolf; //add to newOrg
+                    }
+                    
+                    objOrg.setNumHealth(objOrg.getNumHealth() - 10);
+                    objOrgNext.setNumHealth(objOrgNext.getNumHealth() - 10);
+                  }
+                } else{
+                  objOrg.setCol(objOrg.getX());
+                  objOrg.setRow(objOrg.getY());
+                  objOrgNext.setCol(objOrgNext.getX());
+                  objOrgNext.setRow(objOrgNext.getY());
+                }
+              }
+              else if(ctype.equals("S")){
+                  // do nothing and they stay where they are before.
+                  objOrg.setCol(objOrg.getX());
+                  objOrg.setRow(objOrg.getY());
+                  objOrgNext.setCol(objOrgNext.getX());
+                  objOrgNext.setRow(objOrgNext.getY());
+              }
+              else if(ctype.equals("W")) {
+                // two male meet, they fight to get the spot
+                if(((Animal)objOrg).getGender() == ((Animal)objOrgNext).getGender() && ((Animal)objOrg).getGender() == 1){
+                  
+                  if(((Wolf)objOrg).compareTo((Wolf)objOrgNext) == 0){
+                    if (((Animal)objOrg).getSize() > ((Animal)objOrgNext).getSize()){
+                      objOrg.setNumHealth(objOrg.getNumHealth() - 5);               
+                      objOrgNext.setNumHealth(objOrgNext.getNumHealth() - 15);
+                    } else if (((Animal)objOrg).getSize() < ((Animal)objOrgNext).getSize()){
+                      objOrg.setNumHealth(objOrg.getNumHealth() - 15);               
+                      objOrgNext.setNumHealth(objOrgNext.getNumHealth() - 5);
+                    } else {
+                      objOrg.setNumHealth(objOrg.getNumHealth() - 10);               
+                      objOrgNext.setNumHealth(objOrgNext.getNumHealth() - 10);
+                    }
+                      // stay where they are before.
+                      objOrg.setCol(objOrg.getX());
+                      objOrg.setRow(objOrg.getY());
+                      objOrgNext.setCol(objOrgNext.getX());
+                      objOrgNext.setRow(objOrgNext.getY());
+                    
+                  }else if(((Wolf)objOrg).compareTo((Wolf)objOrgNext) == 1){
+                    // System.out.println("ok2-strong/weak");
+                    objOrg.setNumHealth(objOrg.getNumHealth() - 5);
+                    objOrgNext.setNumHealth(objOrgNext.getNumHealth() - 15);
+                    // loser back to old position.
+                    objOrgNext.setCol(objOrgNext.getX());
+                    objOrgNext.setRow(objOrgNext.getY());
+                  } else {
+                    // System.out.println("ok3-weak/strong");
+                    objOrg.setNumHealth(objOrg.getNumHealth() - 15);
+                    objOrgNext.setNumHealth(objOrgNext.getNumHealth() - 5);
+                    // loser back to old position.
+                    objOrg.setCol(objOrg.getX());
+                    objOrg.setRow(objOrg.getY());
+                  }
+                } else {
+                  objOrg.setCol(objOrg.getX());
+                  objOrg.setRow(objOrg.getY());
+                  objOrgNext.setCol(objOrgNext.getX());
+                  objOrgNext.setRow(objOrgNext.getY());
+                }
+              }
+            //a wolf moves onto a sheep
+            } else if (ctype.equals("W") && ntype.equals("S")){
+              // wolf eat sheep and get sheep's health number
+              objOrg.setNumHealth(objOrg.getNumHealth() + objOrgNext.getNumHealth());
+              sheepNum--;
+              store[j] = null;
+              objOrg.setLastEaten();
+            }
+            // a sheep moves onto a wolf
+            else if(ctype.equals("S") && ntype.equals("W")){
+              objOrgNext.setNumHealth(objOrgNext.getNumHealth() + objOrg.getNumHealth());
+              sheepNum--;
+              store[i] = null;
+              objOrgNext.setLastEaten();
+            }
+          }
+        }
+      }   
+      }
+     }
+        
+      // each turn animal lose 1 health and grow 1 age
+      for(int i = 0; i < counter; i++){
+        if(store[i] != null){
+          Organism objOrg = store[i];
+          if(!objOrg.getType().equals("P")){
+            objOrg.setNumHealth(objOrg.getNumHealth() - 1);
+          }
+          // dead when it too weak
+          if (objOrg.getNumHealth() < 1){
+            store[i] = null;
+            if (objOrg.getType().equals("S")){
+              sheepNum--;
+            } else if (objOrg.getType().equals("W")){
+              wolvesNum--;
+            }
+          }
+          
+          objOrg.setAge(objOrg.getAge() + 1);
+          // dead when it too old
+          if (objOrg.checkOldAge()){
+            store[i] = null;
+            if (objOrg.getType().equals("S")){
+              sheepNum--;
+            } else if (objOrg.getType().equals("W")){
+              wolvesNum--;
+            } else {
+              plantNum --;
+            }
+          }
+        }
+      }
+      
+        // now update store to remove null object and append new objects
+        Organism[] temp = new Organism[side*side];
+        int tempCount = 0;
+        // copy exist object to temp
+        for(int i = 0; i < counter; i++){
+          if(store[i] != null){
+             temp[tempCount++] = store[i];
+          }
+        }
+        // add new object to temp
+        for(int i = 0; i < newCount; i++){
+          if (tempCount < (side*side)-1){
+            temp[tempCount++] = newOrg[i];
+          }
+        }
+        // update counter and store
+        if (tempCount >= side*side){
+          counter = (side*side)-1;
+        } else {
+          counter = tempCount;
+        }
+        for (int i = 0; i < store.length; i++){
+          if(i < tempCount){
+            store[i] = temp[i];
+          } else {
+            store[i] = null;
+          }
+        }
+        
+        // now update map to display relocated objects
+        for(int i = 0; i < side; i++){
+          for(int j = 0; j < side; j++){
+              map[i][j] = null;
+          }
+        }
+        for (int i = 0; i < store.length; i++){
+          if(store[i] != null){
+            map[store[i].getCol()][store[i].getRow()] = store[i];
+          }
+        }
+        
+        // now growth new plants
+        if (plantGrowth != 0) {
+        double plantsGrownPerDay = plantGrowth;
+        int days = 1;
+        if (plantGrowth < 1){
+          days = (int)(1.0/plantGrowth);
+          plantsGrownPerDay = 1;
+        }
+        
+        int numOfEmpty = 0;
+        for (int k = 0; k < side; k++){
+          for (int l = 0; l< side; l++){
+            if (map[k][l] == null){
+              numOfEmpty++;
+            }
+          }
+        }
+        
+        if (numRun % days == 0){
+            for (int i = 0; i < plantsGrownPerDay; i++){
+              if (numOfEmpty != 0){
+                numOfEmpty--;
+                
+              int randX, randY;
+              do {
+                randX = (int)( Math.random() * side);
+                randY = (int)( Math.random() * side);
+              } while (map[randX][randY] != null);
+              
+                Organism objPlant = new Plant(plantHealth,randX,randY);
+                map[randX][randY] = objPlant;
+                plantNum++;
+                if(counter < (side*side)-1)
+                  store[counter++] = objPlant;
+            }
+          }
+        }
+      }
+        
+        plantNum = 0;
+        sheepNum = 0;
+        wolvesNum = 0;
+        for (int i = 0; i < side; i++){
+          for (int j = 0; j < side; j++){
+            if (map[i][j] != null){
+              if (map[i][j].getType().equals("P")){
+                plantNum++;
+              } else if (map[i][j].getType().equals("S")){
+                sheepNum++;
+              } else if (map[i][j].getType().equals("W")){
+                wolvesNum++;
+              }
+            }
+          }
+        }
+        
+       
+        
+      System.out.println("Day" + (numRun++) );
+      System.out.println("Number of Plants: "+ plantNum);
+      System.out.println("Number of Sheep: "+ sheepNum);
+      System.out.println("Number of Wolves: "+ wolvesNum);
+      System.out.println();
+      
+      grid.refresh();
+      try{ Thread.sleep(10); }catch(Exception e) {};
+      
+    } while(wolvesNum > 0 && sheepNum > 0);
+  }
+}

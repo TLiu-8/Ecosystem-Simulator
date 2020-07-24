@@ -1,0 +1,109 @@
+/**
+ * Organism.java
+ * Version: 1.0
+ * Author: Theo Liu
+ * Date: 12/09/2018
+ * Description: Creates Organism Object, has health, max health, age, coordinate, and last eaten check.
+ */
+
+abstract class Organism {
+  
+  private int nNumHealth;
+  private int age;
+  private int maxHealth;
+  private int lastEaten = 0;
+
+
+  public void setMaxHealth(int initial){
+    maxHealth = 2*initial;
+  }
+  public void setNumHealth(int nHealth){
+    if (nHealth >= maxHealth){
+      nNumHealth = maxHealth;
+    } else {
+      nNumHealth = nHealth;
+    }
+  }
+  public int getNumHealth(){
+    return nNumHealth;
+  }
+  
+  public void setAge(int a){
+    age = a;
+  }
+  public int getAge(){
+    return age;
+  }
+  
+  public void growing(){
+   
+  }
+  
+  public void aging(){
+  
+  }
+  
+  public boolean checkAge(){
+    if (age > 0){
+      return true;
+    } else {
+      return false;
+    }
+  }
+  public boolean checkOldAge(){
+    if (age > 750){
+      return true;
+    } else {
+      return false;
+    }
+  }
+  
+  public void setLastEaten(){
+    lastEaten = getAge();
+  }
+  
+  public boolean checkEaten(){
+    if (getAge() - lastEaten < 10){
+      return true;
+    } else {
+      return false;
+    }
+  }
+  
+  private int coordinateX;
+  private int coordinateY;
+  
+  private int oldX;
+  private int oldY;
+  
+  public int getCol(){
+    return coordinateX;
+  }
+  public void setCol(int x){
+    coordinateX = x;
+  }
+  
+  public int getRow(){
+    return coordinateY;
+  }
+  public void setRow(int y){
+    coordinateY = y;
+  }
+  
+  public int getX(){
+    return oldX;
+  }
+  public int getY(){
+    return oldY;
+  }
+  
+  public void setX(int x){
+    oldX = x;
+  }
+  
+  public void setY(int y){
+    oldY = y;
+  }
+  
+  abstract public String getType(); 
+}

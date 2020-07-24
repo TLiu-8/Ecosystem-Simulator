@@ -1,0 +1,24 @@
+
+class Sheep extends Animal {
+  
+  private static String type = "S";
+
+  
+     
+  public String getType(){
+    return type;
+  }
+  
+  public Sheep(int health, int x, int y) {
+    if (getAlpha() % 20 == 0){
+      setMaxHealth(health*2);
+      setNumHealth(health*2);
+    } else {
+      setMaxHealth(health*2);
+      setNumHealth(health*2);
+    }
+    setCol(x);
+    setRow(y);
+    setAge(0);
+  }
+}

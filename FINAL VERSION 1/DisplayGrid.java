@@ -1,0 +1,122 @@
+/* [DisplayGrid.java]
+ * A Small program for Display a 2D String Array graphically
+ * @author Mangat
+ */
+
+// Graphics Imports
+import javax.swing.*;
+import java.awt.*;
+
+class DisplayGrid { 
+
+  private JFrame frame;
+  private int maxX,maxY, GridToScreenRatio;
+  private Organism[][] world;
+  
+  DisplayGrid(Organism[][] w) { 
+    this.world = w;
+    
+    maxX = Toolkit.getDefaultToolkit().getScreenSize().width;
+    maxY = Toolkit.getDefaultToolkit().getScreenSize().height;
+    GridToScreenRatio = maxY / (world.length+1);  //ratio to fit in screen as square map
+    
+    System.out.println("Map size: "+world.length+" by "+world[0].length + "\nScreen size: "+ maxX +"x"+maxY+ " Ratio: " + GridToScreenRatio);
+     
+    this.frame = new JFrame("Map of World");
+    
+    GridAreaPanel worldPanel = new GridAreaPanel();
+    
+    frame.getContentPane().add(BorderLayout.CENTER, worldPanel);
+    frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+    frame.setSize(Toolkit.getDefaultToolkit().getScreenSize());
+    frame.setVisible(true);
+  }
+  
+  public void refresh() { 
+    frame.repaint();
+  }
+   
+  class GridAreaPanel extends JPanel {
+    public void paintComponent(Graphics g) {
+      
+     super.repaint();
+      
+     Image sheepMale = Toolkit.getDefaultToolkit().getImage("sheepmale.png");
+     Image wolfMale = Toolkit.getDefaultToolkit().getImage("wolfmale.png");
+     Image sheepFemale = Toolkit.getDefaultToolkit().getImage("sheepfemale.png");
+     Image wolfFemale = Toolkit.getDefaultToolkit().getImage("wolffemale.png");
+     Image plant = Toolkit.getDefaultToolkit().getImage("plant.png");
+     Image flower = Toolkit.getDefaultToolkit().getImage("flower.png");
+     Image grapes = Toolkit.getDefaultToolkit().getImage("grapes.png");
+     Image alphaSheep = Toolkit.getDefaultToolkit().getImage("alphaSheep.png");
+     Image alphaWolf = Toolkit.getDefaultToolkit().getImage("alphaWolf.png");
+     Image babyWolf = Toolkit.getDefaultToolkit().getImage("babyWolf.png");
+     Image babySheep = Toolkit.getDefaultToolkit().getImage("babySheep.png");
+     
+     setDoubleBuffered(true); 
+     g.setColor(Color.GREEN);
+      
+      for(int i = 0; i<world[0].length;i=i+1){ 
+        for(int j = 0; j<world.length;j=j+1) { 
+          if (world[i][j] != null){
+            if (world[i][j].getType().equals("P")){
+              if ( ( (Plant) world[i][j] ).getSpecialType().equals("GR") ){
+                // draws basic plant (grass)
+                g.drawImage(plant,j*GridToScreenRatio,i*GridToScreenRatio,GridToScreenRatio,GridToScreenRatio,this);
+              } else if ( ( (Plant)world[i][j] ).getSpecialType().equals("F") ){
+                // draws more nutritional plant (flower)
+                g.drawImage(flower,j*GridToScreenRatio,i*GridToScreenRatio,GridToScreenRatio,GridToScreenRatio,this);
+              } else {
+                // draws most nutritional plant (grapes)
+                g.drawImage(grapes,j*GridToScreenRatio,i*GridToScreenRatio,GridToScreenRatio,GridToScreenRatio,this);
+              }
+              g.setColor(Color.BLACK);
+              g.drawRect(j*GridToScreenRatio, i*GridToScreenRatio, GridToScreenRatio, GridToScreenRatio);
+            }
+            else if (((world[i][j]).getType()).equals("S")){
+              if (( (Animal)world[i][j]).getAge() < 20 ){
+                // baby sheep
+                g.drawImage(babySheep,j*GridToScreenRatio,i*GridToScreenRatio,GridToScreenRatio,GridToScreenRatio,this);
+              } else if (((Animal)world[i][j]).getAlpha() % 30 == 0){
+                // alpha sheep
+                g.drawImage(alphaSheep,j*GridToScreenRatio,i*GridToScreenRatio,GridToScreenRatio,GridToScreenRatio,this);
+              } else if (((Animal)world[i][j]).getGender() == 1){
+                // male sheep
+                g.drawImage(sheepMale,j*GridToScreenRatio,i*GridToScreenRatio,GridToScreenRatio,GridToScreenRatio,this);
+              } else {
+                // female sheep
+               g.drawImage(sheepFemale,j*GridToScreenRatio,i*GridToScreenRatio,GridToScreenRatio,GridToScreenRatio,this);
+              }
+              g.setColor(Color.BLACK);
+              g.drawRect(j*GridToScreenRatio, i*GridToScreenRatio, GridToScreenRatio, GridToScreenRatio);
+            }
+            else if (( (Animal)(world[i][j]) ).getType().equals("W")){
+              if ( ( (Animal) world[i][j]).getAge() < 20 ){
+                // baby wolf
+                g.drawImage(babyWolf,j*GridToScreenRatio,i*GridToScreenRatio,GridToScreenRatio,GridToScreenRatio,this);
+              }  else if (((Animal)world[i][j]).getAlpha() % 30 == 0){
+                // alpha wolf
+                g.drawImage(alphaWolf,j*GridToScreenRatio,i*GridToScreenRatio,GridToScreenRatio,GridToScreenRatio,this);
+              } else if (((Animal)world[i][j]).getGender() == 1){
+                // male wolf
+                g.drawImage(wolfMale,j*GridToScreenRatio,i*GridToScreenRatio,GridToScreenRatio,GridToScreenRatio,this);
+              } else {
+                // female wolf
+                g.drawImage(wolfFemale,j*GridToScreenRatio,i*GridToScreenRatio,GridToScreenRatio,GridToScreenRatio,this);
+              }
+              g.setColor(Color.BLACK);
+              g.drawRect(j*GridToScreenRatio, i*GridToScreenRatio, GridToScreenRatio, GridToScreenRatio);
+            }
+          } else{            
+            g.setColor(Color.GREEN);
+            g.drawRect(j*GridToScreenRatio, i*GridToScreenRatio, GridToScreenRatio, GridToScreenRatio);
+            g.fillRect(j*GridToScreenRatio, i*GridToScreenRatio, GridToScreenRatio, GridToScreenRatio);
+            g.setColor(Color.BLACK);
+            g.drawRect(j*GridToScreenRatio, i*GridToScreenRatio, GridToScreenRatio, GridToScreenRatio);
+          }
+        }
+      }
+    }
+  }//end of GridAreaPanel
+} //end of DisplayGrid
+
